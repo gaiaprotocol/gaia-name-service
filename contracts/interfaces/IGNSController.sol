@@ -5,8 +5,15 @@ import "./IGNS.sol";
 import "./IGNSResolver.sol";
 
 interface IGNSController {
-    event NameRegistered(string name, bytes32 indexed labelHash, address indexed owner, uint256 price, uint256 expires);
-    event NameRenewed(string name, bytes32 indexed labelHash, uint256 price, uint256 expires);
+    event NameRegistered(
+        string name,
+        bytes32 indexed labelHash,
+        address indexed nameOwner,
+        address indexed token,
+        uint256 price,
+        uint256 expires
+    );
+    event NameRenewed(string name, bytes32 indexed labelHash, address indexed token, uint256 price, uint256 expires);
     event UpdateDomainManager(bytes32 indexed node, address indexed manager);
     event SetResolver(IGNSResolver newResolver);
     event SetOracle(address newOracle);
@@ -42,7 +49,7 @@ interface IGNSController {
 
     function register(
         string calldata name,
-        address owner,
+        address nameOwner,
         address domainManager,
         uint256 duration,
         bytes calldata data,

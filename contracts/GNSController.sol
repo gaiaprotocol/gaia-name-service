@@ -100,7 +100,7 @@ contract GNSController is IGNSController, Ownable, Multicall {
     // external functions
     function register(
         string calldata name,
-        address owner,
+        address nameOwner,
         address domainManager,
         uint256 duration,
         bytes calldata data,
@@ -112,15 +112,15 @@ contract GNSController is IGNSController, Ownable, Multicall {
 
         bytes32 labelHash = getLabelHash(name);
         uint256 price;
+        address token;
         {
             // to avoid stack-too-deep error
-            address token;
             uint256 key;
             uint256 deadline;
             (token, price, key, deadline) = abi.decode(data, (address, uint256, uint256, uint256));
             _checkOracle(
                 keccak256(
-                    abi.encodePacked(labelHash, owner, duration, token, price, key, block.chainid, address(this))
+                    abi.encodePacked(labelHash, nameOwner, duration, token, price, key, block.chainid, address(this))
                 ),
                 r,
                 vs
@@ -128,14 +128,11 @@ contract GNSController is IGNSController, Ownable, Multicall {
             require(deadline >= block.timestamp, "DEADLINE_EXPIRED");
             require(!usedKeys[key], "USED_KEY");
             usedKeys[key] = true;
-            IERC20(token).safeTransferFrom(msg.sender, treasury, price);
-
-            bytes32 node = getNode(labelHash);
-            domainManagers[node] = domainManager;
         }
+        IERC20(token).safeTransferFrom(msg.sender, treasury, price);
+        _updateDomainManager(getNode(labelHash), domainManager);
 
-        uint256 expires = gns.register(uint256(labelHash), owner, duration);
-        emit NameRegistered(name, labelHash, owner, price, expires);
+        _register(name, labelHash, nameOwner, token, price, duration);
     }
 
     function renew(
@@ -150,10 +147,11 @@ contract GNSController is IGNSController, Ownable, Multicall {
             data,
             (address, uint256, uint256, uint256)
         );
-        bytes32 hash = keccak256(
-            abi.encodePacked(labelHash, duration, token, price, key, block.chainid, address(this))
+        _checkOracle(
+            keccak256(abi.encodePacked(labelHash, duration, token, price, key, block.chainid, address(this))),
+            r,
+            vs
         );
-        _checkOracle(hash, r, vs);
 
         require(deadline >= block.timestamp, "DEADLINE_EXPIRED");
         require(!usedKeys[key], "USED_KEY");
@@ -163,7 +161,7 @@ contract GNSController is IGNSController, Ownable, Multicall {
         usedKeys[key] = true;
         uint256 expires = gns.renew(uint256(labelHash), duration);
 
-        emit NameRenewed(name, labelHash, price, expires);
+        emit NameRenewed(name, labelHash, token, price, expires);
     }
 
     function updateDomainManager(bytes32 node, address addr) external {
@@ -188,6 +186,18 @@ contract GNSController is IGNSController, Ownable, Multicall {
     ) internal view {
         bytes32 message = ECDSA.toEthSignedMessageHash(hash);
         require(ECDSA.recover(message, r, vs) == oracle, "INVALID_ORACLE");
+    }
+
+    function _register(
+        string calldata name,
+        bytes32 labelHash,
+        address nameOwner,
+        address token,
+        uint256 price,
+        uint256 duration
+    ) internal {
+        uint256 expires = gns.register(uint256(labelHash), nameOwner, duration);
+        emit NameRegistered(name, labelHash, nameOwner, token, price, expires);
     }
 
     function _updateDomainManager(bytes32 node, address addr) internal {
