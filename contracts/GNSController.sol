@@ -10,9 +10,9 @@ import "@openzeppelin/contracts/utils/Multicall.sol";
 contract GNSController is IGNSController, Ownable, Multicall {
     using SafeERC20 for IERC20;
 
-    // namehash('gaia')
+    // namehash("gaia")
     bytes32 public constant BASE_NODE = 0x208d08353bf873e56f266090aab1ec351ccad4cc72055f05a0817031e9018b33;
-    // namehash('addr.reverse')
+    // namehash("addr.reverse")
     bytes32 public constant ADDR_REVERSE_NODE = 0x91d1777781884d03a6757a803996e38de2a42967fb37eeaca72729271025a9e2;
     uint256 public constant MIN_REGISTRATION_DURATION = 28 days;
 
@@ -84,7 +84,7 @@ contract GNSController is IGNSController, Ownable, Multicall {
         return valid(name) && gns.available(uint256(getLabelHash(name)));
     }
 
-    // only label. without '.gaia'
+    // only label. without ".gaia"
     function getLabelHash(string calldata label) public pure returns (bytes32) {
         return keccak256(bytes(label));
     }
