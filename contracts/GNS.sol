@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.4;
+pragma solidity ^0.8.17;
 
+import "./interfaces/IGNS.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract GNS is ERC721, Ownable {
-    event SetController(address newController);
-
+contract GNS is IGNS, ERC721, Ownable {
     uint256 public constant GRACE_PERIOD = 90 days;
 
-    mapping(uint256 => uint256) expiries;
+    mapping(uint256 => uint256) public expiries;
     address public controller;
 
     constructor(address _controller) ERC721("GaiaNameService", "GNS") {
@@ -19,11 +18,6 @@ contract GNS is ERC721, Ownable {
     modifier onlyController() {
         require(msg.sender == controller, "NOT_FROM_CONTROLLER");
         _;
-    }
-
-    function ownerOf(uint256 tokenId) public view override returns (address) {
-        require(expiries[tokenId] > block.timestamp, "INVALID_ID");
-        return super.ownerOf(tokenId);
     }
 
     function setController(address _controller) external onlyOwner {
@@ -36,8 +30,9 @@ contract GNS is ERC721, Ownable {
         emit SetController(_controller);
     }
 
-    function nameExpires(uint256 id) external view returns (uint256) {
-        return expiries[id];
+    function ownerOf(uint256 tokenId) public view override(ERC721, IERC721) returns (address) {
+        require(expiries[tokenId] > block.timestamp, "INVALID_ID");
+        return super.ownerOf(tokenId);
     }
 
     function available(uint256 id) public view returns (bool) {

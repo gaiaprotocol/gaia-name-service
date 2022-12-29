@@ -1,23 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "./GNS.sol";
-import "./DefaultResolver.sol";
+import "./interfaces/IGNSController.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/Multicall.sol";
 
-contract GNSController is Ownable, Multicall {
+contract GNSController is IGNSController, Ownable, Multicall {
     using SafeERC20 for IERC20;
-
-    event NameRegistered(string name, bytes32 indexed labelHash, address indexed owner, uint256 price, uint256 expires);
-    event NameRenewed(string name, bytes32 indexed labelHash, uint256 price, uint256 expires);
-    event UpdateDomainManager(bytes32 indexed node, address indexed manager);
-    event SetResolver(DefaultResolver newResolver);
-    event SetOracle(address newOracle);
-    event SetTreasury(address newTreasury);
 
     // namehash('gaia')
     bytes32 public constant BASE_NODE = 0x208d08353bf873e56f266090aab1ec351ccad4cc72055f05a0817031e9018b33;
@@ -25,16 +16,16 @@ contract GNSController is Ownable, Multicall {
     bytes32 public constant ADDR_REVERSE_NODE = 0x91d1777781884d03a6757a803996e38de2a42967fb37eeaca72729271025a9e2;
     uint256 public constant MIN_REGISTRATION_DURATION = 28 days;
 
-    GNS public immutable gns;
-    DefaultResolver public resolver;
+    IGNS public immutable gns;
+    IGNSResolver public resolver;
     address public oracle;
     address public treasury;
     mapping(bytes32 => address) public domainManagers;
     mapping(uint256 => bool) public usedKeys;
 
     constructor(
-        GNS _gns,
-        DefaultResolver _resolver,
+        IGNS _gns,
+        IGNSResolver _resolver,
         address _oracle,
         address _treasury
     ) {
@@ -44,34 +35,17 @@ contract GNSController is Ownable, Multicall {
         _setTreasury(_treasury);
     }
 
-    function setResolver(DefaultResolver _resolver) external onlyOwner {
+    // ownership functions
+    function setResolver(IGNSResolver _resolver) external onlyOwner {
         _setResolver(_resolver);
-    }
-
-    function _setResolver(DefaultResolver _resolver) internal {
-        require(resolver != _resolver, "UNCHANGED");
-        resolver = _resolver;
-        emit SetResolver(_resolver);
     }
 
     function setOracle(address _oracle) external onlyOwner {
         _setOracle(_oracle);
     }
 
-    function _setOracle(address _oracle) internal {
-        require(oracle != _oracle, "UNCHANGED");
-        oracle = _oracle;
-        emit SetOracle(_oracle);
-    }
-
     function setTreasury(address _treasury) external onlyOwner {
         _setTreasury(_treasury);
-    }
-
-    function _setTreasury(address _treasury) internal {
-        require(treasury != _treasury, "UNCHANGED");
-        treasury = _treasury;
-        emit SetTreasury(_treasury);
     }
 
     function recoverFunds(
@@ -82,14 +56,48 @@ contract GNSController is Ownable, Multicall {
         IERC20(_token).safeTransfer(_to, _amount);
     }
 
+    // internal functions related to ownership
+    function _setResolver(IGNSResolver _resolver) internal {
+        require(resolver != _resolver, "UNCHANGED");
+        resolver = _resolver;
+        emit SetResolver(_resolver);
+    }
+
+    function _setOracle(address _oracle) internal {
+        require(oracle != _oracle, "UNCHANGED");
+        oracle = _oracle;
+        emit SetOracle(_oracle);
+    }
+
+    function _setTreasury(address _treasury) internal {
+        require(treasury != _treasury, "UNCHANGED");
+        treasury = _treasury;
+        emit SetTreasury(_treasury);
+    }
+
+    // external view/pure functions
     function valid(string calldata name) public pure returns (bool) {
-        return strlen(name) >= 3;
+        return _strlen(name) >= 3;
     }
 
     function available(string calldata name) external view returns (bool) {
         return valid(name) && gns.available(uint256(getLabelHash(name)));
     }
 
+    // only label. without '.gaia'
+    function getLabelHash(string calldata label) public pure returns (bytes32) {
+        return keccak256(bytes(label));
+    }
+
+    function getNode(bytes32 labelHash) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(BASE_NODE, labelHash));
+    }
+
+    function getReverseNode(address addr) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(ADDR_REVERSE_NODE, _sha3HexAddress(addr)));
+    }
+
+    // external functions
     function register(
         string calldata name,
         address owner,
@@ -158,15 +166,6 @@ contract GNSController is Ownable, Multicall {
         emit NameRenewed(name, labelHash, price, expires);
     }
 
-    function _checkOracle(
-        bytes32 hash,
-        bytes32 r,
-        bytes32 vs
-    ) internal view {
-        bytes32 message = ECDSA.toEthSignedMessageHash(hash);
-        require(ECDSA.recover(message, r, vs) == oracle, "INVALID_ORACLE");
-    }
-
     function updateDomainManager(bytes32 node, address addr) external {
         require(domainManagers[node] == msg.sender || gns.ownerOf(uint256(node)) == msg.sender, "UNAUTHRIZED");
         _updateDomainManager(node, addr);
@@ -179,6 +178,16 @@ contract GNSController is Ownable, Multicall {
 
     function setName(string calldata name) external {
         _setName(msg.sender, name);
+    }
+
+    // internal functions
+    function _checkOracle(
+        bytes32 hash,
+        bytes32 r,
+        bytes32 vs
+    ) internal view {
+        bytes32 message = ECDSA.toEthSignedMessageHash(hash);
+        require(ECDSA.recover(message, r, vs) == oracle, "INVALID_ORACLE");
     }
 
     function _updateDomainManager(bytes32 node, address addr) internal {
@@ -194,20 +203,7 @@ contract GNSController is Ownable, Multicall {
         resolver.setName(getReverseNode(addr), name);
     }
 
-    // only label. without '.gaia'
-    function getLabelHash(string calldata label) public pure returns (bytes32) {
-        return keccak256(bytes(label));
-    }
-
-    function getNode(bytes32 labelHash) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(BASE_NODE, labelHash));
-    }
-
-    function getReverseNode(address addr) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(ADDR_REVERSE_NODE, sha3HexAddress(addr)));
-    }
-
-    function sha3HexAddress(address addr) private pure returns (bytes32 ret) {
+    function _sha3HexAddress(address addr) internal pure returns (bytes32 ret) {
         assembly {
             let lookup := 0x3031323334353637383961626364656600000000000000000000000000000000
 
@@ -228,7 +224,7 @@ contract GNSController is Ownable, Multicall {
         }
     }
 
-    function strlen(string calldata s) internal pure returns (uint256) {
+    function _strlen(string calldata s) internal pure returns (uint256) {
         uint256 len;
         uint256 i = 0;
         uint256 bytelength = bytes(s).length;
