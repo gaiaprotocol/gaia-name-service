@@ -14,10 +14,6 @@ contract GNSResolver is IGNSResolver, Ownable {
     mapping(bytes32 => address) internal _addresses;
     mapping(bytes32 => string) internal _names;
 
-    constructor(address _controller) {
-        _setController(_controller);
-    }
-
     function setController(address _controller) external onlyOwner {
         _setController(_controller);
     }

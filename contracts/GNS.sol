@@ -11,8 +11,7 @@ contract GNS is IGNS, ERC721, Ownable {
     mapping(uint256 => uint256) public expiries;
     address public controller;
 
-    constructor(address _controller, uint256 _gracePeriodDays) ERC721("GaiaNameService", "GNS") {
-        _setController(_controller);
+    constructor(uint256 _gracePeriodDays) ERC721("GaiaNameService", "GNS") {
         GRACE_PERIOD = 3600 * 24 * _gracePeriodDays;
     }
 
