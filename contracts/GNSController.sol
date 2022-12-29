@@ -14,7 +14,7 @@ contract GNSController is IGNSController, Ownable, Multicall {
     bytes32 public constant BASE_NODE = 0x208d08353bf873e56f266090aab1ec351ccad4cc72055f05a0817031e9018b33;
     // namehash("addr.reverse")
     bytes32 public constant ADDR_REVERSE_NODE = 0x91d1777781884d03a6757a803996e38de2a42967fb37eeaca72729271025a9e2;
-    uint256 public constant MIN_REGISTRATION_DURATION = 28 days;
+    uint256 public immutable MIN_REGISTRATION_DURATION; // 28 days;
 
     IGNS public immutable gns;
     IGNSResolver public resolver;
@@ -27,12 +27,14 @@ contract GNSController is IGNSController, Ownable, Multicall {
         IGNS _gns,
         IGNSResolver _resolver,
         address _oracle,
-        address _treasury
+        address _treasury,
+        uint256 _minRegDurationDays
     ) {
         gns = _gns;
         _setResolver(_resolver);
         _setOracle(_oracle);
         _setTreasury(_treasury);
+        MIN_REGISTRATION_DURATION = 3600 * 24 * _minRegDurationDays;
     }
 
     // ownership functions

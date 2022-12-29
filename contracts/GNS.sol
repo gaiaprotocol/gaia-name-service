@@ -6,13 +6,14 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract GNS is IGNS, ERC721, Ownable {
-    uint256 public constant GRACE_PERIOD = 90 days;
+    uint256 public immutable GRACE_PERIOD; // 90 days
 
     mapping(uint256 => uint256) public expiries;
     address public controller;
 
-    constructor(address _controller) ERC721("GaiaNameService", "GNS") {
+    constructor(address _controller, uint256 _gracePeriodDays) ERC721("GaiaNameService", "GNS") {
         _setController(_controller);
+        GRACE_PERIOD = 3600 * 24 * _gracePeriodDays;
     }
 
     modifier onlyController() {
