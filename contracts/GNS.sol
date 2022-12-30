@@ -16,7 +16,7 @@ contract GNS is IGNS, ERC721, Ownable {
     }
 
     modifier onlyController() {
-        require(msg.sender == controller, "NOT_FROM_CONTROLLER");
+        if (msg.sender != controller) revert InvalidCaller();
         _;
     }
 
@@ -25,13 +25,13 @@ contract GNS is IGNS, ERC721, Ownable {
     }
 
     function _setController(address _controller) internal {
-        require(controller != _controller, "UNCHANGED");
+        if (controller == _controller) revert UnchangedData();
         controller = _controller;
         emit SetController(_controller);
     }
 
     function ownerOf(uint256 tokenId) public view override(ERC721, IERC721) returns (address) {
-        require(expiries[tokenId] > block.timestamp, "INVALID_ID");
+        if (expiries[tokenId] <= block.timestamp) revert InvalidId();
         return super.ownerOf(tokenId);
     }
 
@@ -50,7 +50,7 @@ contract GNS is IGNS, ERC721, Ownable {
         address owner,
         uint256 duration
     ) external onlyController returns (uint256) {
-        require(available(id), "UNEXPIRED_ID");
+        if (!available(id)) revert UnexpiredId();
 
         expiries[id] = block.timestamp + duration;
         if (_exists(id)) {
@@ -62,7 +62,7 @@ contract GNS is IGNS, ERC721, Ownable {
     }
 
     function renew(uint256 id, uint256 duration) external onlyController returns (uint256) {
-        require(!available(id), "EXPIRED_ID");
+        if (available(id)) revert ExpiredId();
         expiries[id] += duration;
         return expiries[id];
     }

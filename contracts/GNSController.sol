@@ -60,19 +60,19 @@ contract GNSController is IGNSController, Ownable, Multicall {
 
     // internal functions related to ownership
     function _setResolver(IGNSResolver _resolver) internal {
-        require(resolver != _resolver, "UNCHANGED");
+        if (resolver == _resolver) revert UnchangedData();
         resolver = _resolver;
         emit SetResolver(_resolver);
     }
 
     function _setOracle(address _oracle) internal {
-        require(oracle != _oracle, "UNCHANGED");
+        if (oracle == _oracle) revert UnchangedData();
         oracle = _oracle;
         emit SetOracle(_oracle);
     }
 
     function _setTreasury(address _treasury) internal {
-        require(treasury != _treasury, "UNCHANGED");
+        if (treasury == _treasury) revert UnchangedData();
         treasury = _treasury;
         emit SetTreasury(_treasury);
     }
@@ -109,8 +109,8 @@ contract GNSController is IGNSController, Ownable, Multicall {
         bytes32 r,
         bytes32 vs
     ) external {
-        require(valid(name), "INVALID_NAME");
-        require(duration >= MIN_REGISTRATION_DURATION, "TOO_SHORT_DURATION");
+        if (!valid(name)) revert InvalidName();
+        if (duration < MIN_REGISTRATION_DURATION) revert TooShortDuration();
 
         bytes32 labelHash = getLabelHash(name);
         uint256 price;
@@ -127,8 +127,8 @@ contract GNSController is IGNSController, Ownable, Multicall {
                 r,
                 vs
             );
-            require(deadline >= block.timestamp, "DEADLINE_EXPIRED");
-            require(!usedKeys[key], "USED_KEY");
+            if (deadline < block.timestamp) revert ExpiredDeadline();
+            if (usedKeys[key]) revert UsedKey();
             usedKeys[key] = true;
         }
         IERC20(token).safeTransferFrom(msg.sender, treasury, price);
@@ -155,24 +155,23 @@ contract GNSController is IGNSController, Ownable, Multicall {
             vs
         );
 
-        require(deadline >= block.timestamp, "DEADLINE_EXPIRED");
-        require(!usedKeys[key], "USED_KEY");
+        if (deadline < block.timestamp) revert ExpiredDeadline();
+        if (usedKeys[key]) revert UsedKey();
+        usedKeys[key] = true;
 
         IERC20(token).safeTransferFrom(msg.sender, treasury, price);
 
-        usedKeys[key] = true;
         uint256 expires = gns.renew(uint256(labelHash), duration);
-
         emit NameRenewed(name, labelHash, token, price, expires);
     }
 
     function updateDomainManager(bytes32 node, address addr) external {
-        require(domainManagers[node] == msg.sender || gns.ownerOf(uint256(node)) == msg.sender, "UNAUTHRIZED");
+        if (domainManagers[node] != msg.sender && gns.ownerOf(uint256(node)) != msg.sender) revert Unauthorized();
         _updateDomainManager(node, addr);
     }
 
     function setAddr(bytes32 node, address addr) external {
-        require(domainManagers[node] == msg.sender, "INVALID_CALLER");
+        if (domainManagers[node] != msg.sender) revert InvalidCaller();
         _setAddr(node, addr);
     }
 
@@ -187,7 +186,7 @@ contract GNSController is IGNSController, Ownable, Multicall {
         bytes32 vs
     ) internal view {
         bytes32 message = ECDSA.toEthSignedMessageHash(hash);
-        require(ECDSA.recover(message, r, vs) == oracle, "INVALID_ORACLE");
+        if (ECDSA.recover(message, r, vs) != oracle) revert InvalidOracle();
     }
 
     function _register(

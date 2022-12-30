@@ -2,6 +2,9 @@
 pragma solidity ^0.8.17;
 
 interface IGNSResolver {
+    error InvalidCaller();
+    error UnchangedData();
+
     /**
      * e.g.
      * AddressChanged(namehash("thegreathb.gaia"), 0x1234....abcd)

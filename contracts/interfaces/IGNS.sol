@@ -4,6 +4,12 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 interface IGNS is IERC721 {
+    error InvalidCaller();
+    error UnchangedData();
+    error InvalidId();
+    error UnexpiredId();
+    error ExpiredId();
+
     event SetController(address newController);
 
     function GRACE_PERIOD() external view returns (uint256);

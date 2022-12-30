@@ -5,6 +5,15 @@ import "./IGNS.sol";
 import "./IGNSResolver.sol";
 
 interface IGNSController {
+    error UnchangedData();
+    error InvalidName();
+    error TooShortDuration();
+    error ExpiredDeadline();
+    error UsedKey();
+    error Unauthorized();
+    error InvalidCaller();
+    error InvalidOracle();
+
     /**
      * e.g.
      * NameRegistered("thegreathb", namehash("thegreathb"), 0x1234....abcd, tokenAddr, 10000, 123456789)

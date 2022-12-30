@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract GNSResolver is IGNSResolver, Ownable {
     modifier onlyController() {
-        require(msg.sender == controller, "NOT_FROM_CONTROLLER");
+        if (msg.sender != controller) revert InvalidCaller();
         _;
     }
 
@@ -19,7 +19,7 @@ contract GNSResolver is IGNSResolver, Ownable {
     }
 
     function _setController(address _controller) internal {
-        require(controller != _controller, "UNCHANGED");
+        if (controller == _controller) revert UnchangedData();
         controller = _controller;
         emit SetController(_controller);
     }
