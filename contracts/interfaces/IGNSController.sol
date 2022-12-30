@@ -7,7 +7,7 @@ import "./IGNSResolver.sol";
 interface IGNSController {
     /**
      * e.g.
-     * NameRegistered("hb", namehash("hb"), 0x1234....abcd, tokenAddr, 10000, 123456789)
+     * NameRegistered("thegreathb", namehash("thegreathb"), 0x1234....abcd, tokenAddr, 10000, 123456789)
      */
     event NameRegistered(
         string name,
@@ -19,12 +19,12 @@ interface IGNSController {
     );
     /**
      * e.g.
-     * NameRenewed("hb", namehash("hb"), tokenAddr, 10000, 123456789)
+     * NameRenewed("thegreathb", namehash("thegreathb"), tokenAddr, 10000, 123456789)
      */
     event NameRenewed(string name, bytes32 indexed labelHash, address indexed token, uint256 price, uint256 expires);
     /**
      * e.g.
-     * UpdateDomainManager(namehash("hb.gaia"), 0x1234....abcd)
+     * UpdateDomainManager(namehash("thegreathb.gaia"), 0x1234....abcd)
      */
     event UpdateDomainManager(bytes32 indexed node, address indexed manager);
     event SetResolver(IGNSResolver newResolver);
@@ -47,7 +47,7 @@ interface IGNSController {
 
     /**
      * e.g.
-     * node : namehash("hb.gaia")
+     * node : namehash("thegreathb.gaia")
      */
     function domainManagers(bytes32 node) external view returns (address);
 
@@ -55,27 +55,27 @@ interface IGNSController {
 
     /**
      * e.g.
-     * name : "hb"
+     * name : "thegreathb"
      */
     function valid(string calldata name) external pure returns (bool);
 
     /**
      * e.g.
-     * name : "hb"
+     * name : "thegreathb"
      */
     function available(string calldata name) external view returns (bool);
 
     /**
      * e.g.
-     * label : "hb"
-     * return : namehash("hb")
+     * label : "thegreathb"
+     * return : namehash("thegreathb")
      */
     function getLabelHash(string calldata label) external pure returns (bytes32);
 
     /**
      * e.g.
-     * labelHash : namehash("hb")
-     * return : namehash("hb.gaia")
+     * labelHash : namehash("thegreathb")
+     * return : namehash("thegreathb.gaia")
      */
     function getNode(bytes32 labelHash) external pure returns (bytes32);
 
@@ -88,7 +88,7 @@ interface IGNSController {
 
     /**
      * e.g.
-     * name : "hb"
+     * name : "thegreathb"
      */
     function register(
         string calldata name,
@@ -102,7 +102,7 @@ interface IGNSController {
 
     /**
      * e.g.
-     * name : "hb"
+     * name : "thegreathb"
      */
     function renew(
         string calldata name,
@@ -114,19 +114,19 @@ interface IGNSController {
 
     /**
      * e.g.
-     * node : namehash("hb.gaia")
+     * node : namehash("thegreathb.gaia")
      */
     function updateDomainManager(bytes32 node, address addr) external;
 
     /**
      * e.g.
-     * node : namehash("hb.gaia")
+     * node : namehash("thegreathb.gaia")
      */
     function setAddr(bytes32 node, address addr) external;
 
     /**
      * e.g.
-     * name : "hb.gaia"
+     * name : "thegreathb.gaia"
      */
     function setName(string calldata name) external;
 }
