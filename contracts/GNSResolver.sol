@@ -35,8 +35,8 @@ contract GNSResolver is IGNSResolver, Ownable {
     }
 
     function setAddr(bytes32 node, address a) external onlyController {
-        emit AddressChanged(node, a);
         _addresses[node] = a;
+        emit AddressChanged(node, a);
     }
 
     function setName(bytes32 reverseNode, string calldata _name) external onlyController {
