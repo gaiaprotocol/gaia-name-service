@@ -30,8 +30,12 @@ contract GNS is IGNS, ERC721, Ownable {
         emit SetController(_controller);
     }
 
+    function expired(uint256 tokenId) public view returns (bool) {
+        return expiries[tokenId] < block.timestamp;
+    }
+
     function ownerOf(uint256 tokenId) public view override(ERC721, IERC721) returns (address) {
-        if (expiries[tokenId] <= block.timestamp) revert InvalidId();
+        if (expired(tokenId)) revert InvalidId();
         return super.ownerOf(tokenId);
     }
 

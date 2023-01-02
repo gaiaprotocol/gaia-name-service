@@ -18,6 +18,8 @@ interface IGNS is IERC721 {
 
     function expiries(uint256 id) external view returns (uint256);
 
+    function expired(uint256 tokenId) external view returns (bool);
+
     function available(uint256 id) external view returns (bool);
 
     function register(
