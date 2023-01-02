@@ -166,12 +166,14 @@ contract GNSController is IGNSController, Ownable, Multicall {
         emit NameRenewed(name, labelHash, token, price, expiries);
     }
 
-    function updateDomainManager(bytes32 node, address addr) external {
-        if (domainManagers[node] != msg.sender && gns.ownerOf(uint256(node)) != msg.sender) revert Unauthorized();
+    function updateDomainManager(bytes32 labelHash, address addr) external {
+        bytes32 node = getNode(labelHash);
+        if (domainManagers[node] != msg.sender && gns.ownerOf(uint256(labelHash)) != msg.sender) revert Unauthorized();
         _updateDomainManager(node, addr);
     }
 
-    function setAddr(bytes32 node, address addr) external {
+    function setAddr(bytes32 labelHash, address addr) external {
+        bytes32 node = getNode(labelHash);
         if (domainManagers[node] != msg.sender) revert InvalidCaller();
         _setAddr(node, addr);
     }

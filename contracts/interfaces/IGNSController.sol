@@ -123,15 +123,15 @@ interface IGNSController {
 
     /**
      * e.g.
-     * node : namehash("thegreathb.gaia")
+     * labelHash : namehash("thegreathb")
      */
-    function updateDomainManager(bytes32 node, address addr) external;
+    function updateDomainManager(bytes32 labelHash, address addr) external;
 
     /**
      * e.g.
-     * node : namehash("thegreathb.gaia")
+     * labelHash : namehash("thegreathb")
      */
-    function setAddr(bytes32 node, address addr) external;
+    function setAddr(bytes32 labelHash, address addr) external;
 
     /**
      * e.g.
