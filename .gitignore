@@ -27,6 +27,7 @@ package-lock.json
 # hardhat
 cache
 artifacts
+coverage*
 
 # typechain
 typechain*

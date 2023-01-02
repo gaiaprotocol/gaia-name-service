@@ -388,7 +388,7 @@ describe("GNSController", function () {
                         expect(expiry).to.be.lt(await latest());
                         expect(expiry + GP).to.be.gt(await latest());
 
-                        expect(await gns.available(id(NAME))).to.be.false;
+                        expect(await controller.available(NAME)).to.be.false;
                     });
                 });
 
@@ -397,7 +397,7 @@ describe("GNSController", function () {
                         await increase(DURATION + GP);
                         await mine();
 
-                        expect(await gns.available(id(NAME))).to.be.true;
+                        expect(await controller.available(NAME)).to.be.true;
                         await _register({ key: 2, nameOwner: bob });
 
                         expect(expiry + GP).to.be.lt(await latest());
@@ -558,13 +558,13 @@ describe("GNSController", function () {
                 await mine();
                 expect(expiry).to.be.lt(await latest());
                 expect(expiry + GP).to.be.gt(await latest());
-                expect(await gns.available(id(NAME))).to.be.false;
+                expect(await controller.available(NAME)).to.be.false;
 
                 await _renew({ key: 10 });
 
                 await increase(DURATION + GP);
                 await mine();
-                expect(await gns.available(id(NAME))).to.be.true;
+                expect(await controller.available(NAME)).to.be.true;
                 await expect(_renew({ key: 11 })).to.be.revertedWithCustomError(gns, "ExpiredId");
             });
         });
