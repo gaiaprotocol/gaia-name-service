@@ -144,6 +144,7 @@ contract GNSController is IGNSController, Ownable, Multicall {
         bytes32 r,
         bytes32 vs
     ) external {
+        if (duration == 0) revert TooShortDuration();
         bytes32 labelHash = getLabelHash(name);
         (address token, uint256 price, uint256 key, uint256 deadline) = abi.decode(
             data,
