@@ -122,7 +122,7 @@ contract GNSController is IGNSController, Ownable, Multicall {
             (token, price, key, deadline) = abi.decode(data, (address, uint256, uint256, uint256));
             _checkOracle(
                 keccak256(
-                    abi.encodePacked(labelHash, nameOwner, duration, token, price, key, block.chainid, address(this))
+                    abi.encodePacked(labelHash, nameOwner, duration, token, price, key, deadline, block.chainid, address(this))
                 ),
                 r,
                 vs
@@ -151,7 +151,7 @@ contract GNSController is IGNSController, Ownable, Multicall {
             (address, uint256, uint256, uint256)
         );
         _checkOracle(
-            keccak256(abi.encodePacked(labelHash, duration, token, price, key, block.chainid, address(this))),
+            keccak256(abi.encodePacked(labelHash, duration, token, price, key, deadline, block.chainid, address(this))),
             r,
             vs
         );
@@ -174,7 +174,7 @@ contract GNSController is IGNSController, Ownable, Multicall {
 
     function setAddr(bytes32 labelHash, address addr) external {
         bytes32 node = getNode(labelHash);
-        if (domainManagers[node] != msg.sender) revert InvalidCaller();
+        if (domainManagers[node] != msg.sender) revert Unauthorized();
         _setAddr(node, addr);
     }
 

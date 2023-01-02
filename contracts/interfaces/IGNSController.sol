@@ -11,7 +11,6 @@ interface IGNSController {
     error ExpiredDeadline();
     error UsedKey();
     error Unauthorized();
-    error InvalidCaller();
     error InvalidOracle();
 
     /**
