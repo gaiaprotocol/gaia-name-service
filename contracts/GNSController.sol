@@ -161,8 +161,8 @@ contract GNSController is IGNSController, Ownable, Multicall {
 
         IERC20(token).safeTransferFrom(msg.sender, treasury, price);
 
-        uint256 expires = gns.renew(uint256(labelHash), duration);
-        emit NameRenewed(name, labelHash, token, price, expires);
+        uint256 expiries = gns.renew(uint256(labelHash), duration);
+        emit NameRenewed(name, labelHash, token, price, expiries);
     }
 
     function updateDomainManager(bytes32 node, address addr) external {
@@ -197,8 +197,8 @@ contract GNSController is IGNSController, Ownable, Multicall {
         uint256 price,
         uint256 duration
     ) internal {
-        uint256 expires = gns.register(uint256(labelHash), nameOwner, duration);
-        emit NameRegistered(name, labelHash, nameOwner, token, price, expires);
+        uint256 expiries = gns.register(uint256(labelHash), nameOwner, duration);
+        emit NameRegistered(name, labelHash, nameOwner, token, price, expiries);
     }
 
     function _updateDomainManager(bytes32 node, address addr) internal {

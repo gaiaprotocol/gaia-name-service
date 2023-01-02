@@ -24,13 +24,13 @@ interface IGNSController {
         address indexed nameOwner,
         address indexed token,
         uint256 price,
-        uint256 expires
+        uint256 expiries
     );
     /**
      * e.g.
      * NameRenewed("thegreathb", namehash("thegreathb"), tokenAddr, 10000, 123456789)
      */
-    event NameRenewed(string name, bytes32 indexed labelHash, address indexed token, uint256 price, uint256 expires);
+    event NameRenewed(string name, bytes32 indexed labelHash, address indexed token, uint256 price, uint256 expiries);
     /**
      * e.g.
      * UpdateDomainManager(namehash("thegreathb.gaia"), 0x1234....abcd)
